@@ -21,14 +21,16 @@ class MyApp(QMainWindow):
         self.show()
 
     def initUI(self):
-        self.lienzo = QLabel()
-        self.pixmap = QPixmap(self.size())
-        self.pixmap.fill(Qt.white)
-        self.lienzo.setPixmap(self.pixmap)
+        self.lienzo = QWidget()
+        
+        
         self.setCentralWidget(self.lienzo)
 
     def paintEvent(self, event: QPaintEvent):
         print(self.rect())
+        painter = QPainter(self)
+        painter.setPen(QPen(Qt.black, 4, Qt.SolidLine))
+        painter.drawEllipse(100, 100, 200, 200)
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
