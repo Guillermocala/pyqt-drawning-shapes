@@ -22,21 +22,19 @@ class MyApp(QMainWindow):
 
     def initUI(self):
         self.draw = False
+        self.square = False
+        self.circle = False
         self.lienzo = QLabel()
         self.pixmap = QPixmap(self.size())
+        self.painter = QPainter(self.pixmap)
+        self.pen = QPen(Qt.black, 4, Qt.SolidLine)
+        self.painter.setPen(self.pen)
         self.pixmap.fill(Qt.white)
         self.setCentralWidget(self.lienzo)
 
     def paintEvent(self, event: QPaintEvent):
-        painter = QPainter(self.pixmap)
-        painter.setPen(QPen(Qt.black, 4, Qt.SolidLine))
-        if self.draw:
-            painter.drawEllipse(100, 100, 200, 200)
-        else:
-            self.pixmap.fill(Qt.white)
-        painter.end()
+        self.painter.drawPixmap(0, 0, self.pixmap)
         self.lienzo.setPixmap(self.pixmap)
-        
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -67,12 +65,31 @@ class MyApp(QMainWindow):
     
     def onMyToolBarButtonClick(self):
         print(self.sender().text())
-        
+        self.pen2 = QPen(Qt.red, 4, Qt.SolidLine)
+        self.painter.setPen(self.pen2)
+        match self.sender().text():
+            case "circle":
+                if self.circle:
+                    self.circle = False
+                    self.pixmap.fill(Qt.white)
+                else:
+                    self.painter.drawEllipse(200, 200, 200, 200)
+                    self.circle = True
+            case "square":
+                if self.square:
+                    self.square = False
+                    self.pixmap.fill(Qt.white)
+                else:
+                    self.painter.drawRect(200, 200, 200, 200)
+                    self.square = True
 
     def saludo(self):
+        self.painter.setPen(self.pen)
         if self.draw:
             self.draw = False
+            self.pixmap.fill(Qt.white)
         else:
+            self.painter.drawEllipse(100, 100, 200, 200)
             self.draw = True
 
 if __name__ == "__main__":
