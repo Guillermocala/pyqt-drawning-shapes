@@ -21,16 +21,22 @@ class MyApp(QMainWindow):
         self.show()
 
     def initUI(self):
-        self.lienzo = QWidget()
-        
-        
+        self.draw = False
+        self.lienzo = QLabel()
+        self.pixmap = QPixmap(self.size())
+        self.pixmap.fill(Qt.white)
         self.setCentralWidget(self.lienzo)
 
     def paintEvent(self, event: QPaintEvent):
-        print(self.rect())
-        painter = QPainter(self)
+        painter = QPainter(self.pixmap)
         painter.setPen(QPen(Qt.black, 4, Qt.SolidLine))
-        painter.drawEllipse(100, 100, 200, 200)
+        if self.draw:
+            painter.drawEllipse(100, 100, 200, 200)
+        else:
+            self.pixmap.fill(Qt.white)
+        painter.end()
+        self.lienzo.setPixmap(self.pixmap)
+        
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -52,6 +58,10 @@ class MyApp(QMainWindow):
         self.options_toolbar.addAction("Draw accept state", lambda: self.saludo("draw accept state"))
     
     def saludo(self, texto):
+        if self.draw:
+            self.draw = False
+        else:
+            self.draw = True
         print(texto)
 
 if __name__ == "__main__":
