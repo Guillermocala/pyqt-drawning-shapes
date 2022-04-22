@@ -3,7 +3,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
-    QPen, QFont
+    QPen, QFont, QAction
 )
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
@@ -52,17 +52,28 @@ class MyApp(QMainWindow):
         self.subAction22 = self.opcion2.addAction("Option 2")
 
     def initToolbar(self):
-        self.options_toolbar = QToolBar("Options1", self)
+        self.options_toolbar = QToolBar("Options1")
         self.addToolBar(Qt.RightToolBarArea, self.options_toolbar)
-        self.options_toolbar.addAction("Draw state", lambda: self.saludo("draw state"))
-        self.options_toolbar.addAction("Draw accept state", lambda: self.saludo("draw accept state"))
+        self.options_toolbar.addAction("Draw state", self.saludo)
+        self.options_toolbar.addAction("Draw accept state", self.saludo)
+        self.options_toolbar.addSeparator()
+        self.options_toolbar.addAction("testing", lambda: self.saludo("testing"))
+        self.button_action = QAction("circle", self)
+        self.button_action2 = QAction("square", self)
+        self.button_action.triggered.connect(self.onMyToolBarButtonClick)
+        self.button_action2.triggered.connect(self.onMyToolBarButtonClick)
+        self.options_toolbar.addAction(self.button_action)
+        self.options_toolbar.addAction(self.button_action2)
     
-    def saludo(self, texto):
+    def onMyToolBarButtonClick(self):
+        print(self.sender().text())
+        
+
+    def saludo(self):
         if self.draw:
             self.draw = False
         else:
             self.draw = True
-        print(texto)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
