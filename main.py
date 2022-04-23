@@ -1,6 +1,8 @@
 import sys
 from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtCore import Qt
+from PySide6.QtCore import (
+    Qt, QPoint
+)
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
     QPen, QFont, QAction
@@ -21,6 +23,9 @@ class MyApp(QMainWindow):
         self.show()
 
     def initUI(self):
+        # lista de puntos para dibujar
+        self.points = {1:QPoint(100, 200), 2:QPoint(150, 250), 3:QPoint(200, 300)}
+        print(self.points)
         self.draw = False
         self.square = False
         self.circle = False
@@ -55,7 +60,7 @@ class MyApp(QMainWindow):
         self.options_toolbar.addAction("Draw state", self.saludo)
         self.options_toolbar.addAction("Draw accept state", self.saludo)
         self.options_toolbar.addSeparator()
-        self.options_toolbar.addAction("testing", lambda: self.saludo("testing"))
+        self.options_toolbar.addAction("testing")
         self.button_action = QAction("circle", self)
         self.button_action2 = QAction("square", self)
         self.button_action.triggered.connect(self.onMyToolBarButtonClick)
@@ -65,7 +70,7 @@ class MyApp(QMainWindow):
     
     def onMyToolBarButtonClick(self):
         print(self.sender().text())
-        self.pen2 = QPen(Qt.red, 4, Qt.SolidLine)
+        self.pen2 = QPen(Qt.red, 2, Qt.SolidLine)
         self.painter.setPen(self.pen2)
         match self.sender().text():
             case "circle":
@@ -73,7 +78,9 @@ class MyApp(QMainWindow):
                     self.circle = False
                     self.pixmap.fill(Qt.white)
                 else:
-                    self.painter.drawEllipse(200, 200, 200, 200)
+                    # draw a accept state
+                    self.painter.drawEllipse(200, 200, 50, 50)
+                    self.painter.drawEllipse(195, 195, 60, 60)
                     self.circle = True
             case "square":
                 if self.square:
@@ -89,7 +96,8 @@ class MyApp(QMainWindow):
             self.draw = False
             self.pixmap.fill(Qt.white)
         else:
-            self.painter.drawEllipse(100, 100, 200, 200)
+            for key, value in self.points.items():
+                self.painter.drawEllipse(value, 50, 50)
             self.draw = True
 
 if __name__ == "__main__":
