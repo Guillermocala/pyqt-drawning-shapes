@@ -5,7 +5,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
-    QPen, QFont, QAction
+    QPen, QFont, QAction, QIcon, QCursor
 )
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
@@ -16,6 +16,7 @@ class MyApp(QMainWindow):
     def __init__(self):
         super(MyApp, self).__init__()
         self.setGeometry(300, 100, 800, 500)
+        self.setWindowIcon(QIcon("graph.ico"))
         self.setWindowTitle("Shape drawer")
         self.initUI()
         self.initMenuBar()
@@ -31,10 +32,10 @@ class MyApp(QMainWindow):
 
     def initUI(self):
         # lista de puntos para dibujar
+        self.actual_pos = QPoint(0, 0)
+        self.input = False
         self.posx = 200
         self.posy = 200
-        self.points = {1:QPoint(100, 200), 2:QPoint(150, 250), 3:QPoint(200, 300)}
-        print(self.points)
         self.lienzo = QLabel()
         self.pixmap = QPixmap(self.size())
         self.painter = QPainter(self.pixmap)
@@ -72,7 +73,21 @@ class MyApp(QMainWindow):
         self.options_toolbar.addSeparator()
         self.options_toolbar.addAction("Clear screen", self.clearScreen)
         self.options_toolbar.addAction("Show data", self.showData)
+        self.temp_action = QAction("soy una prueba")
+        self.temp_action.setCheckable(True)
+        self.temp_action.triggered.connect(self.soy_una_prueba)
+        self.options_toolbar.addAction(self.temp_action)
+
+    def soy_una_prueba(self):
+        print(self.sender().text())
+        if self.temp_action.isChecked():
+            
+            self.temp_action.setChecked(False)
     
+    def mouseReleaseEvent(self, QMouseEvent):
+        print(QCursor.pos())
+    
+
     def toolbarShow(self):
         if self.options_toolbar.isVisible():
             self.options_toolbar.setVisible(False)
@@ -99,9 +114,9 @@ class MyApp(QMainWindow):
                 self.painter.drawEllipse(point, 60, 60)
             case _:
                 print("Error option -> draw states match")
-        print(self.main_dictionary)
 
     def clearScreen(self):
+        self.indexState = 1
         self.main_dictionary = {0:QPoint(100, 100)}
         self.states_dictionary = {}
         self.accepted_states_dictionary = {}
@@ -109,6 +124,7 @@ class MyApp(QMainWindow):
         self.pixmap.fill(Qt.white)
 
     def showData(self):
+        print("\n\n\tdata\n\n")
         print("main dict: ", self.main_dictionary)
         print("states dict: ", self.states_dictionary)
         print("accepted states dict: ", self.accepted_states_dictionary)
