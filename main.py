@@ -81,11 +81,15 @@ class MyApp(QMainWindow):
     def soy_una_prueba(self):
         print(self.sender().text())
         if self.temp_action.isChecked():
-            
             self.temp_action.setChecked(False)
     
     def mouseReleaseEvent(self, QMouseEvent):
-        print(QCursor.pos())
+        if self.input:
+            print("la pos elegida es: ", QCursor.pos())
+            self.actual_pos = self.lienzo.mapFromGlobal(QCursor.pos())
+            self.input = False
+        else:
+            print("la pos cualquiera es: ", self.lienzo.mapFromGlobal(QCursor.pos()))
     
 
     def toolbarShow(self):
@@ -95,23 +99,27 @@ class MyApp(QMainWindow):
             self.options_toolbar.setVisible(True)
 
     def drawStates(self):
-        point = QPoint((self.posx), (self.posy))
-        self.posx += 50     
+        """el while fuerza a los eventos, haciendo que fuerce el evento del
+        mouse para recoger la posicion a dibujar"""
+        self.input = True
         match self.sender().text():
             case "Draw state":
                 print("Draw state case")
-                # draw a accept state
-                self.main_dictionary[self.indexState] = point
-                self.states_dictionary[self.indexState] = point
+                while self.input:
+                    QtCore.QCoreApplication.processEvents()
+                self.main_dictionary[self.indexState] = self.actual_pos
+                self.states_dictionary[self.indexState] = self.actual_pos
                 self.indexState += 1
-                self.painter.drawEllipse(point, 50, 50)
+                self.painter.drawEllipse(self.actual_pos, 25, 25)
             case "Draw accept state":
                 print("Draw accept state case")
-                self.main_dictionary[self.indexState] = point
-                self.accepted_states_dictionary[self.indexState] = point
+                while self.input:
+                    QtCore.QCoreApplication.processEvents()
+                self.main_dictionary[self.indexState] = self.actual_pos
+                self.accepted_states_dictionary[self.indexState] = self.actual_pos
                 self.indexState += 1
-                self.painter.drawEllipse(point, 50, 50)
-                self.painter.drawEllipse(point, 60, 60)
+                self.painter.drawEllipse(self.actual_pos, 25, 25)
+                self.painter.drawEllipse(self.actual_pos, 33, 33)
             case _:
                 print("Error option -> draw states match")
 
