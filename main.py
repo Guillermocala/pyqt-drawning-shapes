@@ -5,7 +5,8 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
-    QPen, QFont, QAction, QIcon, QCursor
+    QPen, QFont, QAction, QIcon, QCursor,
+    QPainterPath
 )
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
@@ -21,32 +22,34 @@ class MyApp(QMainWindow):
         self.initUI()
         self.initMenuBar()
         self.initToolbar()
+        self.statusBar().showMessage("Welcome to the AFND visualizer", 5000)
         self.show()
         """para deshabilitar la molesta opcion de hide toolbar cuando se da 
         click derecho, deshabilita los context menu en general"""
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         self.indexState = 1
+        self.size_inner_circle = 25
+        self.size_outer_circle = 33
         self.main_dictionary = {0:QPoint(100, 100)}
         self.states_dictionary = {}
         self.accepted_states_dictionary = {}
 
     def initUI(self):
-        # lista de puntos para dibujar
         self.actual_pos = QPoint(0, 0)
         self.input = False
-        self.posx = 200
-        self.posy = 200
         self.lienzo = QLabel()
         self.pixmap = QPixmap(self.size())
         self.painter = QPainter(self.pixmap)
         self.pen = QPen(Qt.black, 4, Qt.SolidLine)
         self.painter.setPen(self.pen)
+        self.painter.drawPixmap(0, 0, self.pixmap)
         self.pixmap.fill(Qt.white)
         self.setCentralWidget(self.lienzo)
 
     def paintEvent(self, event: QPaintEvent):
-        self.painter.drawPixmap(0, 0, self.pixmap)
         self.lienzo.setPixmap(self.pixmap)
+        if not self.statusBar().currentMessage():
+            self.statusBar().setStyleSheet("background-color:#F0F0F0")
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -68,21 +71,16 @@ class MyApp(QMainWindow):
         self.options_toolbar = QToolBar("Options1")
         self.options_toolbar.setMovable(False)
         self.addToolBar(Qt.RightToolBarArea, self.options_toolbar)
-        self.options_toolbar.addAction("Draw state", self.drawStates)
-        self.options_toolbar.addAction("Draw accept state", self.drawStates)
+        self.draw_state_action = QAction("Draw state")
+        self.draw_accept_state_action = QAction("Draw accept state")
+        self.draw_state_action.triggered.connect(self.drawStates)
+        self.draw_accept_state_action.triggered.connect(self.drawStates)
+        self.options_toolbar.addAction(self.draw_state_action)
+        self.options_toolbar.addAction(self.draw_accept_state_action)
         self.options_toolbar.addSeparator()
         self.options_toolbar.addAction("Clear screen", self.clearScreen)
         self.options_toolbar.addAction("Show data", self.showData)
-        self.temp_action = QAction("soy una prueba")
-        self.temp_action.setCheckable(True)
-        self.temp_action.triggered.connect(self.soy_una_prueba)
-        self.options_toolbar.addAction(self.temp_action)
 
-    def soy_una_prueba(self):
-        print(self.sender().text())
-        if self.temp_action.isChecked():
-            self.temp_action.setChecked(False)
-    
     def mouseReleaseEvent(self, QMouseEvent):
         if self.input:
             print("la pos elegida es: ", QCursor.pos())
@@ -90,7 +88,6 @@ class MyApp(QMainWindow):
             self.input = False
         else:
             print("la pos cualquiera es: ", self.lienzo.mapFromGlobal(QCursor.pos()))
-    
 
     def toolbarShow(self):
         if self.options_toolbar.isVisible():
@@ -102,6 +99,10 @@ class MyApp(QMainWindow):
         """el while fuerza a los eventos, haciendo que fuerce el evento del
         mouse para recoger la posicion a dibujar"""
         self.input = True
+        self.draw_state_action.setEnabled(False)
+        self.draw_accept_state_action.setEnabled(False)
+        self.statusBar().setStyleSheet("background-color:yellow")
+        self.statusBar().showMessage("STATUS:   esperando coordenadas...")
         match self.sender().text():
             case "Draw state":
                 print("Draw state case")
@@ -109,19 +110,28 @@ class MyApp(QMainWindow):
                     QtCore.QCoreApplication.processEvents()
                 self.main_dictionary[self.indexState] = self.actual_pos
                 self.states_dictionary[self.indexState] = self.actual_pos
+                self.painter.drawText(self.actual_pos, str(self.indexState))
+                self.painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
                 self.indexState += 1
-                self.painter.drawEllipse(self.actual_pos, 25, 25)
+                self.statusBar().showMessage("STATUS:   State drawed!", 2000)
             case "Draw accept state":
                 print("Draw accept state case")
                 while self.input:
                     QtCore.QCoreApplication.processEvents()
                 self.main_dictionary[self.indexState] = self.actual_pos
                 self.accepted_states_dictionary[self.indexState] = self.actual_pos
+                self.painter.drawText(self.actual_pos, str(self.indexState))
+                self.painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
+                self.painter.drawEllipse(self.actual_pos, self.size_outer_circle, self.size_outer_circle)
                 self.indexState += 1
-                self.painter.drawEllipse(self.actual_pos, 25, 25)
-                self.painter.drawEllipse(self.actual_pos, 33, 33)
+                self.statusBar().showMessage("STATUS:   Accept state drawed!", 2000)
             case _:
                 print("Error option -> draw states match")
+        self.draw_state_action.setEnabled(True)
+        self.draw_accept_state_action.setEnabled(True)
+
+    def drawTransitions(self):
+        path = QPainterPath()
 
     def clearScreen(self):
         self.indexState = 1
@@ -130,6 +140,8 @@ class MyApp(QMainWindow):
         self.accepted_states_dictionary = {}
         self.posx = 200
         self.pixmap.fill(Qt.white)
+        self.statusBar().setStyleSheet("background-color:yellow")
+        self.statusBar().showMessage("STATUS:   Screen cleared!", 2000)
 
     def showData(self):
         print("\n\n\tdata\n\n")
