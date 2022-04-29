@@ -1,7 +1,7 @@
 import sys
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import (
-    Qt, QPoint
+    Qt, QPoint, QPointF
 )
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
@@ -73,10 +73,13 @@ class MyApp(QMainWindow):
         self.addToolBar(Qt.RightToolBarArea, self.options_toolbar)
         self.draw_state_action = QAction("Draw state")
         self.draw_accept_state_action = QAction("Draw accept state")
+        self.draw_transition_action = QAction("Draw transition")
         self.draw_state_action.triggered.connect(self.drawStates)
         self.draw_accept_state_action.triggered.connect(self.drawStates)
+        self.draw_transition_action.triggered.connect(self.drawTransitions)
         self.options_toolbar.addAction(self.draw_state_action)
         self.options_toolbar.addAction(self.draw_accept_state_action)
+        self.options_toolbar.addAction(self.draw_transition_action)
         self.options_toolbar.addSeparator()
         self.options_toolbar.addAction("Clear screen", self.clearScreen)
         self.options_toolbar.addAction("Show data", self.showData)
@@ -132,6 +135,16 @@ class MyApp(QMainWindow):
 
     def drawTransitions(self):
         path = QPainterPath()
+        print(self.main_dictionary[1])
+        print(self.main_dictionary[2])
+        punto1 = QPointF(self.main_dictionary[1])
+        punto2 = QPointF(self.main_dictionary[2])
+        path.moveTo(punto1)
+        puntoControl = QPointF(0.0, 0.0)
+        path.quadTo(puntoControl, punto2)
+        self.painter.drawPath(path)
+        print("dibujado?")
+
 
     def clearScreen(self):
         self.indexState = 1
