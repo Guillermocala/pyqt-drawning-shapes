@@ -86,8 +86,8 @@ class MyApp(QMainWindow):
 
     def mouseReleaseEvent(self, QMouseEvent):
         if self.input:
-            print("la pos elegida es: ", QCursor.pos())
             self.actual_pos = self.lienzo.mapFromGlobal(QCursor.pos())
+            print("la pos elegida es: ", self.actual_pos)
             self.input = False
         else:
             print("la pos cualquiera es: ", self.lienzo.mapFromGlobal(QCursor.pos()))
@@ -140,8 +140,18 @@ class MyApp(QMainWindow):
         punto1 = QPointF(self.main_dictionary[1])
         punto2 = QPointF(self.main_dictionary[2])
         path.moveTo(punto1)
-        puntoControl = QPointF(0.0, 0.0)
-        path.quadTo(puntoControl, punto2)
+        restaPuntos = QPoint(punto1.x() - punto2.x(), punto1.y() - punto2.y())
+        if restaPuntos.x() < 0 and restaPuntos.y() > 0:
+            puntoControl1 = QPointF(punto1.x(), punto2.y())
+        elif restaPuntos.x() > 0 and restaPuntos.y() > 0:
+            puntoControl1 = QPointF(punto2.x(), punto1.y())
+        elif restaPuntos.x() > 0 and restaPuntos.y() < 0:
+            puntoControl1 = QPointF(punto1.x(), punto2.y())
+        elif restaPuntos.x() < 0 and restaPuntos.y() < 0:
+            puntoControl1 = QPointF(punto2.x(), punto1.y())
+        
+        path.quadTo(puntoControl1, punto2)
+        self.painter.drawPoint(puntoControl1)
         self.painter.drawPath(path)
         print("dibujado?")
 
