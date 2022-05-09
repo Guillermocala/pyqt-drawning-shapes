@@ -22,11 +22,9 @@ class MyApp(QMainWindow):
         "tamaños de los circulos de los estados"
         self.size_inner_circle = 25
         self.size_outer_circle = 33
-        "indexState es el controlador central de mi lista"
-        self.indexState = 1
         "listas de estados"
         self.main_dictionary = {0:QPoint(100, 100)}
-        self.states_dictionary = {}
+        self.states_dictionary = {0:QPoint(100, 100)}
         self.accepted_states_dictionary = {}
         "inicializacion de componentes"
         self.initUI()
@@ -137,27 +135,25 @@ class MyApp(QMainWindow):
                 print("Draw state case")
                 while self.input:
                     QtCore.QCoreApplication.processEvents()
-                self.main_dictionary[self.indexState] = self.actual_pos
-                self.states_dictionary[self.indexState] = self.actual_pos
-                self.painter.drawText(self.actual_pos, str(self.indexState))
+                self.states_dictionary[len(self.main_dictionary)] = self.actual_pos
+                self.painter.drawText(self.actual_pos, str(len(self.main_dictionary)))
                 self.painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
-                self.initialState.addItem(str(self.indexState))
-                self.endingState.addItem(str(self.indexState))
-                self.indexState += 1
+                self.initialState.addItem(str(len(self.main_dictionary)))
+                self.endingState.addItem(str(len(self.main_dictionary)))
+                self.main_dictionary[len(self.main_dictionary)] = self.actual_pos
                 self.statusBar().setStyleSheet("background-color:green")
                 self.statusBar().showMessage("STATUS:   State drawed!", 2000)
             case "Draw accept state":
                 print("Draw accept state case")
                 while self.input:
                     QtCore.QCoreApplication.processEvents()
-                self.main_dictionary[self.indexState] = self.actual_pos
-                self.accepted_states_dictionary[self.indexState] = self.actual_pos
-                self.painter.drawText(self.actual_pos, str(self.indexState))
+                self.accepted_states_dictionary[len(self.main_dictionary)] = self.actual_pos
+                self.painter.drawText(self.actual_pos, str(len(self.main_dictionary)))
                 self.painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
                 self.painter.drawEllipse(self.actual_pos, self.size_outer_circle, self.size_outer_circle)
-                self.initialState.addItem(str(self.indexState))
-                self.endingState.addItem(str(self.indexState))
-                self.indexState += 1
+                self.initialState.addItem(str(len(self.main_dictionary)))
+                self.endingState.addItem(str(len(self.main_dictionary)))
+                self.main_dictionary[len(self.main_dictionary)] = self.actual_pos
                 self.statusBar().setStyleSheet("background-color:green")
                 self.statusBar().showMessage("STATUS:   Accept state drawed!", 2000)
             case _:
@@ -200,9 +196,8 @@ class MyApp(QMainWindow):
         for i in range(len(self.main_dictionary) + 1, 0, -1):
             self.initialState.removeItem(i)
             self.endingState.removeItem(i)
-        self.indexState = 1
         self.main_dictionary = {0:QPoint(100, 100)}
-        self.states_dictionary = {}
+        self.states_dictionary = {0:QPoint(100, 100)}
         self.accepted_states_dictionary = {}
         self.pixmap.fill(Qt.white)
         self.statusBar().setStyleSheet("background-color:green")
