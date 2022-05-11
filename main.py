@@ -6,7 +6,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
     QPen, QFont, QAction, QIcon, QCursor,
-    QPainterPath
+    QPainterPath, QPolygonF
 )
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
@@ -169,21 +169,43 @@ class MyApp(QMainWindow):
             path = QPainterPath()
             punto1 = QPointF(self.main_dictionary[int(primerSeleccionado)])
             punto2 = QPointF(self.main_dictionary[int(segundoSeleccionado)])
+            size_arrow = 15
             if punto1 == punto2:
                 self.statusBar().showMessage("STATUS:   Building!", 5000)
             else:
-                #path.moveTo(QPointF(punto1.x() - self.size_inner_circle, punto1.y() - self.size_inner_circle))
-                path.moveTo(punto1)
                 restaPuntos = QPoint(punto1.x() - punto2.x(), punto1.y() - punto2.y())
+                #cuadrante 1
                 if restaPuntos.x() < 0 and restaPuntos.y() > 0:
+                    path.moveTo(QPointF(punto1.x(), punto1.y() - self.size_inner_circle))
                     puntoControl1 = QPointF(punto1.x(), punto2.y())
-                elif restaPuntos.x() > 0 and restaPuntos.y() > 0:
-                    puntoControl1 = QPointF(punto2.x(), punto1.y())
-                elif restaPuntos.x() > 0 and restaPuntos.y() < 0:
-                    puntoControl1 = QPointF(punto1.x(), punto2.y())
+                    path.quadTo(puntoControl1, QPointF(punto2.x() - self.size_inner_circle, punto2.y()))
+                    puntoFinal = path.pointAtPercent(1)
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
+                #cuadrante 2
                 elif restaPuntos.x() < 0 and restaPuntos.y() < 0:
+                    path.moveTo(QPointF(punto1.x() + self.size_inner_circle, punto1.y()))
                     puntoControl1 = QPointF(punto2.x(), punto1.y())
-                path.quadTo(puntoControl1, punto2)
+                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() - self.size_inner_circle))
+                    puntoFinal = path.pointAtPercent(1)
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
+                #cuadrante 3
+                elif restaPuntos.x() > 0 and restaPuntos.y() < 0:
+                    path.moveTo(QPointF(punto1.x(), punto1.y() + self.size_inner_circle))
+                    puntoControl1 = QPointF(punto1.x(), punto2.y())
+                    path.quadTo(puntoControl1, QPointF(punto2.x()  + self.size_inner_circle, punto2.y()))
+                    puntoFinal = path.pointAtPercent(1)
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
+                #cuadrante 4
+                elif restaPuntos.x() > 0 and restaPuntos.y() > 0:
+                    path.moveTo(QPointF(punto1.x() - self.size_inner_circle, punto1.y()))
+                    puntoControl1 = QPointF(punto2.x(), punto1.y())
+                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() + self.size_inner_circle))
+                    puntoFinal = path.pointAtPercent(1)
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
+                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
                 self.painter.drawPoint(puntoControl1)
                 self.painter.drawPath(path)
                 self.statusBar().setStyleSheet("background-color:green")
