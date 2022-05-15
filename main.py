@@ -171,7 +171,17 @@ class MyApp(QMainWindow):
             punto2 = QPointF(self.main_dictionary[int(segundoSeleccionado)])
             size_arrow = 15
             if punto1 == punto2:
-                self.statusBar().showMessage("STATUS:   Building!", 5000)
+                if int(primerSeleccionado) in self.states_dictionary:
+                    diferencia = self.size_inner_circle * 2
+                    punto = QPointF(punto1.x(), punto1.y() - self.size_inner_circle)
+                else:
+                    diferencia = self.size_outer_circle * 2
+                    punto = QPointF(punto1.x(), punto1.y() - self.size_outer_circle)
+                self.painter.drawArc(punto1.x() - diferencia, punto1.y() - diferencia, diferencia, diferencia, 0 * 16, 270 * 16)
+                self.painter.drawLine(punto, QPointF(punto.x() - size_arrow, punto.y() - size_arrow))
+                self.painter.drawLine(punto, QPointF(punto.x() + size_arrow, punto.y() - size_arrow))
+                self.statusBar().setStyleSheet("background-color:green")
+                self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
             else:
                 restaPuntos = QPoint(punto1.x() - punto2.x(), punto1.y() - punto2.y())
                 #cuadrante 1
