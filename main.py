@@ -170,13 +170,17 @@ class MyApp(QMainWindow):
             punto1 = QPointF(self.main_dictionary[int(primerSeleccionado)])
             punto2 = QPointF(self.main_dictionary[int(segundoSeleccionado)])
             size_arrow = 15
+
+            controlDibujado1 = self.size_inner_circle
+            controlDibujado2 = self.size_inner_circle
+            if int(primerSeleccionado) in self.accepted_states_dictionary:
+                controlDibujado1 = self.size_outer_circle
+            if int(segundoSeleccionado) in self.accepted_states_dictionary:
+                controlDibujado2 = self.size_outer_circle
+
             if punto1 == punto2:
-                if int(primerSeleccionado) in self.states_dictionary:
-                    diferencia = self.size_inner_circle * 2
-                    punto = QPointF(punto1.x(), punto1.y() - self.size_inner_circle)
-                else:
-                    diferencia = self.size_outer_circle * 2
-                    punto = QPointF(punto1.x(), punto1.y() - self.size_outer_circle)
+                diferencia = controlDibujado1 * 2
+                punto = QPointF(punto1.x(), punto1.y() - controlDibujado1)
                 self.painter.drawArc(punto1.x() - diferencia, punto1.y() - diferencia, diferencia, diferencia, 0 * 16, 270 * 16)
                 self.painter.drawLine(punto, QPointF(punto.x() - size_arrow, punto.y() - size_arrow))
                 self.painter.drawLine(punto, QPointF(punto.x() + size_arrow, punto.y() - size_arrow))
@@ -186,33 +190,33 @@ class MyApp(QMainWindow):
                 restaPuntos = QPoint(punto1.x() - punto2.x(), punto1.y() - punto2.y())
                 #cuadrante 1
                 if restaPuntos.x() < 0 and restaPuntos.y() > 0:
-                    path.moveTo(QPointF(punto1.x(), punto1.y() - self.size_inner_circle))
+                    path.moveTo(QPointF(punto1.x(), punto1.y() - controlDibujado1))
                     puntoControl1 = QPointF(punto1.x(), punto2.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x() - self.size_inner_circle, punto2.y()))
+                    path.quadTo(puntoControl1, QPointF(punto2.x() - controlDibujado2, punto2.y()))
                     puntoFinal = path.pointAtPercent(1)
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
                 #cuadrante 2
                 elif restaPuntos.x() < 0 and restaPuntos.y() < 0:
-                    path.moveTo(QPointF(punto1.x() + self.size_inner_circle, punto1.y()))
+                    path.moveTo(QPointF(punto1.x() + controlDibujado1, punto1.y()))
                     puntoControl1 = QPointF(punto2.x(), punto1.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() - self.size_inner_circle))
+                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() - controlDibujado2))
                     puntoFinal = path.pointAtPercent(1)
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
                 #cuadrante 3
                 elif restaPuntos.x() > 0 and restaPuntos.y() < 0:
-                    path.moveTo(QPointF(punto1.x(), punto1.y() + self.size_inner_circle))
+                    path.moveTo(QPointF(punto1.x(), punto1.y() + controlDibujado1))
                     puntoControl1 = QPointF(punto1.x(), punto2.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x()  + self.size_inner_circle, punto2.y()))
+                    path.quadTo(puntoControl1, QPointF(punto2.x()  + controlDibujado2, punto2.y()))
                     puntoFinal = path.pointAtPercent(1)
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
                 #cuadrante 4
                 elif restaPuntos.x() > 0 and restaPuntos.y() > 0:
-                    path.moveTo(QPointF(punto1.x() - self.size_inner_circle, punto1.y()))
+                    path.moveTo(QPointF(punto1.x() - controlDibujado1, punto1.y()))
                     puntoControl1 = QPointF(punto2.x(), punto1.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() + self.size_inner_circle))
+                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() + controlDibujado2))
                     puntoFinal = path.pointAtPercent(1)
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
                     self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
