@@ -44,6 +44,7 @@ class MyApp(QMainWindow):
         self.setContextMenuPolicy(Qt.PreventContextMenu)
 
     def initUI(self):
+        self.tiempoAnimacion = 2
         self.timertemp = QTimer()
         self.timertemp.setSingleShot(True)
         self.temporal2 = False
@@ -75,7 +76,6 @@ class MyApp(QMainWindow):
         if self.timertemp.remainingTime() > 1:
             print(self.timertemp.remainingTime())
             self.temporal2 = False
-        
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -292,30 +292,30 @@ class MyApp(QMainWindow):
             self.statusBar().showMessage("STATUS:   Debe seleccionar dos indices!", 5000)
 
     def pauseAnimation(self):
-        time.sleep(2)
+        time.sleep(self.tiempoAnimacion)
 
     def verifyWord(self):
         initialPos = 0
-        isMoved = False
-        oldkey = 0
         palabraAVerificar = self.textVerifyHolder.displayText()
-        print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
-        print(lista_palabra)
         if palabraAVerificar != "":
             if self.transitions_dictionary:
                 for item in lista_palabra:
                     self.painter.setPen(self.penAnimation)
+                    self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
+                    if initialPos in self.accepted_states_dictionary:
+                        self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_outer_circle, self.size_outer_circle)
                     self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
-                    print("dibuja", str(initialPos))
                     self.temporal2 = True
-                    self.timertemp.start(2000)
+                    self.timertemp.start(self.tiempoAnimacion * 1000)
                     while self.temporal2:
                         QtCore.QCoreApplication.processEvents()
                     self.pauseAnimation()
                     self.painter.setPen(self.pen)
                     self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
-                    print("seccion ",initialPos ," : ", self.transitions_dictionary[initialPos])
+                    self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
+                    if initialPos in self.accepted_states_dictionary:
+                        self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_outer_circle, self.size_outer_circle)
                     try:
                         isMoved = False
                         for key, value in self.transitions_dictionary[initialPos].items():
@@ -323,9 +323,8 @@ class MyApp(QMainWindow):
                                 puntoADibujar = self.transitionsValuePosition[initialPos][key]
                                 self.painter.setPen(self.penAnimation)
                                 self.painter.drawText(puntoADibujar, str(value))
-                                print("dibuja", str(value))
                                 self.temporal2 = True
-                                self.timertemp.start(2000)
+                                self.timertemp.start(self.tiempoAnimacion * 1000)
                                 while self.temporal2:
                                     QtCore.QCoreApplication.processEvents()
                                 self.pauseAnimation()
@@ -339,16 +338,22 @@ class MyApp(QMainWindow):
                             print("no se mueve")
                             break
                     except:
-                        self.statusBar().showMessage("STATUS:   Verify error!", 10000)    
-                print("despues de:", initialPos)
+                        self.statusBar().showMessage("STATUS:   Verify error!", 10000)
                 self.painter.setPen(self.penAnimation)
+                self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
+                if initialPos in self.accepted_states_dictionary:
+                    self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_outer_circle, self.size_outer_circle)
                 self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
-                print("dibuja", str(initialPos))
                 self.temporal2 = True
-                self.timertemp.start(2000)
+                self.timertemp.start(self.tiempoAnimacion * 1000)
                 while self.temporal2:
                     QtCore.QCoreApplication.processEvents()
                 self.pauseAnimation()
+                self.painter.setPen(self.pen)
+                self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
+                if initialPos in self.accepted_states_dictionary:
+                    self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_outer_circle, self.size_outer_circle)
+                self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
                 if initialPos not in self.accepted_states_dictionary or isMoved == False:
                     self.statusBar().setStyleSheet("background-color:red")
                     self.statusBar().showMessage("STATUS:   Invalid!", 10000)
@@ -359,10 +364,20 @@ class MyApp(QMainWindow):
                 self.statusBar().setStyleSheet("background-color:red")
                 self.statusBar().showMessage("STATUS:   No hay transiciones!", 10000)
         else:
+            """si se ingresa un elemento vacío solo queda en el primer estado y automaticamente
+            se vuelve invalido, ya que el primer estado siempre es normal y no aceptación"""
+            self.painter.setPen(self.penAnimation)
+            self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
+            self.temporal2 = True
+            self.timertemp.start(self.tiempoAnimacion * 1000)
+            while self.temporal2:
+                QtCore.QCoreApplication.processEvents()
+            self.pauseAnimation()
+            self.painter.setPen(self.pen)
+            self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
             self.statusBar().setStyleSheet("background-color:red")
-            self.statusBar().showMessage("STATUS:   Debe ingresar una palabra!", 10000)
+            self.statusBar().showMessage("STATUS:   Invalid!", 10000)
         self.painter.setPen(self.pen)
-
 
     def clearScreen(self):
         "borramos las opciones de los combobox iterando al revés"
