@@ -6,11 +6,12 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
     QPen, QFont, QAction, QIcon, QCursor,
-    QPainterPath, QPolygonF
+    QPainterPath
 )
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
-    QLabel, QHBoxLayout, QToolBar, QComboBox, QPushButton
+    QLabel, QHBoxLayout, QToolBar, QComboBox, QPushButton,
+    QLineEdit
 )
 
 class MyApp(QMainWindow):
@@ -23,9 +24,11 @@ class MyApp(QMainWindow):
         self.size_inner_circle = 25
         self.size_outer_circle = 33
         "listas de estados"
-        self.main_dictionary = {0:QPoint(100, 100)}
+        self.main_dictionary = {0:QPoint(100, 200)}
         self.states_dictionary = {0:QPoint(100, 100)}
         self.accepted_states_dictionary = {}
+        self.transitions_dictionary = {}
+        self.pixmap_dict = {}
         "inicializacion de componentes"
         self.initUI()
         self.initMenuBar()
@@ -43,10 +46,23 @@ class MyApp(QMainWindow):
         self.lienzo = QLabel()
         self.pixmap = QPixmap(self.size())
         self.painter = QPainter(self.pixmap)
+        self.font = QFont()
+        self.font.setPixelSize(20)
         self.pen = QPen(Qt.black, 4, Qt.SolidLine)
         self.painter.setPen(self.pen)
+        self.painter.setFont(self.font)
         self.painter.drawPixmap(0, 0, self.pixmap)
         self.pixmap.fill(Qt.white)
+        """self.aux_pixmap = QPixmap(self.size())
+        self.aux_painter = QPainter(self.aux_pixmap)
+        self.aux_painter.setPen(self.pen)
+        self.aux_painter.drawPixmap(0, 0, self.aux_pixmap)"""
+        self.painter.drawText(self.main_dictionary[0], str(len(self.main_dictionary) - 1))
+        self.painter.drawEllipse(self.main_dictionary[0], self.size_inner_circle, self.size_inner_circle)
+        puntoFlechaEstadoInicial = QPointF(self.main_dictionary[0].x() - self.size_inner_circle, self.main_dictionary[0].y())
+        self.painter.drawLine(puntoFlechaEstadoInicial, QPointF(puntoFlechaEstadoInicial.x() - 45, puntoFlechaEstadoInicial.y()))
+        self.painter.drawLine(puntoFlechaEstadoInicial, QPointF(puntoFlechaEstadoInicial.x() - 15, puntoFlechaEstadoInicial.y() - 15))
+        self.painter.drawLine(puntoFlechaEstadoInicial, QPointF(puntoFlechaEstadoInicial.x() - 15, puntoFlechaEstadoInicial.y() + 15))
         self.setCentralWidget(self.lienzo)
 
     def paintEvent(self, event: QPaintEvent):
@@ -74,6 +90,7 @@ class MyApp(QMainWindow):
         self.transitionsModule = QWidget()
         self.layoutTransitionsModule = QVBoxLayout(self.transitionsModule)
         self.layoutComboboxes = QHBoxLayout()
+        self.layoutLineEdit = QHBoxLayout()
         self.layoutButton = QVBoxLayout()
         self.initialState = QComboBox()
         self.endingState = QComboBox()
@@ -81,12 +98,15 @@ class MyApp(QMainWindow):
         self.endingState.setPlaceholderText("State 2")
         self.initialState.addItem("0")
         self.endingState.addItem("0")
+        self.textHolder = QLineEdit()
+        self.layoutLineEdit.addWidget(self.textHolder)
         self.drawTransitionButton = QPushButton("Draw transition")
         self.drawTransitionButton.clicked.connect(self.drawTransitions)
         self.layoutComboboxes.addWidget(self.initialState)
         self.layoutComboboxes.addWidget(self.endingState)
         self.layoutButton.addWidget(self.drawTransitionButton)
         self.layoutTransitionsModule.addLayout(self.layoutComboboxes)
+        self.layoutTransitionsModule.addLayout(self.layoutLineEdit)
         self.layoutTransitionsModule.addLayout(self.layoutButton)
 
     def initToolbar(self):
@@ -130,14 +150,19 @@ class MyApp(QMainWindow):
         self.draw_accept_state_action.setEnabled(False)
         self.statusBar().setStyleSheet("background-color:yellow")
         self.statusBar().showMessage("STATUS:   esperando coordenadas...")
+        #self.aux_pixmap.fill(QtGui.QColor(255, 255, 255, 0))
         match self.sender().text():
             case "Draw state":
                 print("Draw state case")
                 while self.input:
                     QtCore.QCoreApplication.processEvents()
                 self.states_dictionary[len(self.main_dictionary)] = self.actual_pos
+                #self.aux_painter.drawText(self.actual_pos, str(len(self.main_dictionary)))
+                #self.aux_painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
+                #self.pixmap_dict[len(self.pixmap_dict)] = self.aux_pixmap
                 self.painter.drawText(self.actual_pos, str(len(self.main_dictionary)))
                 self.painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
+                #self.painter.drawPixmap(0, 0, self.aux_pixmap)
                 self.initialState.addItem(str(len(self.main_dictionary)))
                 self.endingState.addItem(str(len(self.main_dictionary)))
                 self.main_dictionary[len(self.main_dictionary)] = self.actual_pos
@@ -164,66 +189,71 @@ class MyApp(QMainWindow):
     def drawTransitions(self):
         primerSeleccionado = self.initialState.currentText()
         segundoSeleccionado = self.endingState.currentText()
+        datosTransicion = self.textHolder.displayText()
         self.statusBar().setStyleSheet("background-color:red")
         if primerSeleccionado != "" and segundoSeleccionado != "":
-            path = QPainterPath()
-            punto1 = QPointF(self.main_dictionary[int(primerSeleccionado)])
-            punto2 = QPointF(self.main_dictionary[int(segundoSeleccionado)])
-            size_arrow = 15
+            if datosTransicion != "":
+                path = QPainterPath()
+                punto1 = QPointF(self.main_dictionary[int(primerSeleccionado)])
+                punto2 = QPointF(self.main_dictionary[int(segundoSeleccionado)])
+                size_arrow = 15
+                """estos pequeños condicionales son para que quede bien dibujado"""
+                controlDibujado1 = self.size_inner_circle
+                controlDibujado2 = self.size_inner_circle
+                if int(primerSeleccionado) in self.accepted_states_dictionary:
+                    controlDibujado1 = self.size_outer_circle
+                if int(segundoSeleccionado) in self.accepted_states_dictionary:
+                    controlDibujado2 = self.size_outer_circle
 
-            controlDibujado1 = self.size_inner_circle
-            controlDibujado2 = self.size_inner_circle
-            if int(primerSeleccionado) in self.accepted_states_dictionary:
-                controlDibujado1 = self.size_outer_circle
-            if int(segundoSeleccionado) in self.accepted_states_dictionary:
-                controlDibujado2 = self.size_outer_circle
-
-            if punto1 == punto2:
-                diferencia = controlDibujado1 * 2
-                punto = QPointF(punto1.x(), punto1.y() - controlDibujado1)
-                self.painter.drawArc(punto1.x() - diferencia, punto1.y() - diferencia, diferencia, diferencia, 0 * 16, 270 * 16)
-                self.painter.drawLine(punto, QPointF(punto.x() - size_arrow, punto.y() - size_arrow))
-                self.painter.drawLine(punto, QPointF(punto.x() + size_arrow, punto.y() - size_arrow))
-                self.statusBar().setStyleSheet("background-color:green")
-                self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
+                if punto1 == punto2:
+                    tamaño_circulo = controlDibujado1 * 2
+                    puntoFlecha = QPointF(punto1.x(), punto1.y() - controlDibujado1)
+                    self.painter.drawArc(punto1.x() - tamaño_circulo, punto1.y() - tamaño_circulo, tamaño_circulo, tamaño_circulo, 0 * 16, 270 * 16)
+                    self.painter.drawLine(puntoFlecha, QPointF(puntoFlecha.x() - size_arrow, puntoFlecha.y() - size_arrow))
+                    self.painter.drawLine(puntoFlecha, QPointF(puntoFlecha.x() + size_arrow, puntoFlecha.y() - size_arrow))
+                    self.painter.drawText(QPointF(punto1.x() - tamaño_circulo, punto1.y() - tamaño_circulo), str(datosTransicion))
+                    self.statusBar().setStyleSheet("background-color:green")
+                    self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
+                else:
+                    restaPuntos = QPoint(punto1.x() - punto2.x(), punto1.y() - punto2.y())
+                    #cuadrante 1
+                    if restaPuntos.x() < 0 and restaPuntos.y() > 0:
+                        path.moveTo(QPointF(punto1.x(), punto1.y() - controlDibujado1))
+                        puntoControl1 = QPointF(punto1.x(), punto2.y())
+                        path.quadTo(puntoControl1, QPointF(punto2.x() - controlDibujado2, punto2.y()))
+                        puntoFinal = path.pointAtPercent(1)
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
+                    #cuadrante 2
+                    elif restaPuntos.x() < 0 and restaPuntos.y() < 0:
+                        path.moveTo(QPointF(punto1.x() + controlDibujado1, punto1.y()))
+                        puntoControl1 = QPointF(punto2.x(), punto1.y())
+                        path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() - controlDibujado2))
+                        puntoFinal = path.pointAtPercent(1)
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
+                    #cuadrante 3
+                    elif restaPuntos.x() > 0 and restaPuntos.y() < 0:
+                        path.moveTo(QPointF(punto1.x(), punto1.y() + controlDibujado1))
+                        puntoControl1 = QPointF(punto1.x(), punto2.y())
+                        path.quadTo(puntoControl1, QPointF(punto2.x()  + controlDibujado2, punto2.y()))
+                        puntoFinal = path.pointAtPercent(1)
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
+                    #cuadrante 4
+                    elif restaPuntos.x() > 0 and restaPuntos.y() > 0:
+                        path.moveTo(QPointF(punto1.x() - controlDibujado1, punto1.y()))
+                        puntoControl1 = QPointF(punto2.x(), punto1.y())
+                        path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() + controlDibujado2))
+                        puntoFinal = path.pointAtPercent(1)
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
+                        self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
+                    self.painter.drawText(path.pointAtPercent(0.5), str(datosTransicion))
+                    self.painter.drawPath(path)
+                    self.statusBar().setStyleSheet("background-color:green")
+                    self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
             else:
-                restaPuntos = QPoint(punto1.x() - punto2.x(), punto1.y() - punto2.y())
-                #cuadrante 1
-                if restaPuntos.x() < 0 and restaPuntos.y() > 0:
-                    path.moveTo(QPointF(punto1.x(), punto1.y() - controlDibujado1))
-                    puntoControl1 = QPointF(punto1.x(), punto2.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x() - controlDibujado2, punto2.y()))
-                    puntoFinal = path.pointAtPercent(1)
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
-                #cuadrante 2
-                elif restaPuntos.x() < 0 and restaPuntos.y() < 0:
-                    path.moveTo(QPointF(punto1.x() + controlDibujado1, punto1.y()))
-                    puntoControl1 = QPointF(punto2.x(), punto1.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() - controlDibujado2))
-                    puntoFinal = path.pointAtPercent(1)
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() - size_arrow))
-                #cuadrante 3
-                elif restaPuntos.x() > 0 and restaPuntos.y() < 0:
-                    path.moveTo(QPointF(punto1.x(), punto1.y() + controlDibujado1))
-                    puntoControl1 = QPointF(punto1.x(), punto2.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x()  + controlDibujado2, punto2.y()))
-                    puntoFinal = path.pointAtPercent(1)
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() - size_arrow))
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
-                #cuadrante 4
-                elif restaPuntos.x() > 0 and restaPuntos.y() > 0:
-                    path.moveTo(QPointF(punto1.x() - controlDibujado1, punto1.y()))
-                    puntoControl1 = QPointF(punto2.x(), punto1.y())
-                    path.quadTo(puntoControl1, QPointF(punto2.x(), punto2.y() + controlDibujado2))
-                    puntoFinal = path.pointAtPercent(1)
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() + size_arrow, puntoFinal.y() + size_arrow))
-                    self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
-                self.painter.drawPoint(puntoControl1)
-                self.painter.drawPath(path)
-                self.statusBar().setStyleSheet("background-color:green")
-                self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
+                self.statusBar().showMessage("STATUS:   Debe ingresar el dato de transicion!", 5000)    
         else:
             self.statusBar().showMessage("STATUS:   Debe seleccionar dos indices!", 5000)
 
@@ -244,6 +274,7 @@ class MyApp(QMainWindow):
         print("main dict: ", self.main_dictionary)
         print("states dict: ", self.states_dictionary)
         print("accepted states dict: ", self.accepted_states_dictionary)
+        print("pixmap dict: ", self.pixmap_dict)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
