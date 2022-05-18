@@ -303,11 +303,11 @@ class MyApp(QMainWindow):
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
         print(lista_palabra)
-        self.painter.setPen(self.penAnimation)
         if palabraAVerificar != "":
             if self.transitions_dictionary:
                 print("antes de:", initialPos)
                 for item in lista_palabra:
+                    self.painter.setPen(self.penAnimation)
                     self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
                     print("dibuja", str(initialPos))
                     self.temporal2 = True
@@ -315,12 +315,15 @@ class MyApp(QMainWindow):
                     while self.temporal2:
                         QtCore.QCoreApplication.processEvents()
                     self.pauseAnimation()
+                    self.painter.setPen(self.pen)
+                    self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
                     print("seccion ",initialPos ," : ", self.transitions_dictionary[initialPos])
                     try:
                         isMoved = False
                         for key, value in self.transitions_dictionary[initialPos].items():
                             if item == value or item in value.split(","):
                                 puntoADibujar = self.transitionsValuePosition[initialPos][key]
+                                self.painter.setPen(self.penAnimation)
                                 self.painter.drawText(puntoADibujar, str(value))
                                 print("dibuja", str(value))
                                 self.temporal2 = True
@@ -328,6 +331,8 @@ class MyApp(QMainWindow):
                                 while self.temporal2:
                                     QtCore.QCoreApplication.processEvents()
                                 self.pauseAnimation()
+                                self.painter.setPen(self.pen)
+                                self.painter.drawText(puntoADibujar, str(value))
                                 isMoved = True
                                 initialPos = key
                         if isMoved:
@@ -338,6 +343,7 @@ class MyApp(QMainWindow):
                     except:
                         self.statusBar().showMessage("STATUS:   Verify error!", 10000)    
                 print("despues de:", initialPos)
+                self.painter.setPen(self.penAnimation)
                 self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
                 print("dibuja", str(initialPos))
                 self.temporal2 = True
