@@ -1,4 +1,5 @@
 import sys
+import time
 from collections import defaultdict
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import (
@@ -28,6 +29,7 @@ class MyApp(QMainWindow):
         self.main_dictionary = {0:QPoint(100, 300)}
         self.states_dictionary = {0:QPoint(100, 300)}
         self.accepted_states_dictionary = {}
+        self.transitionsValuePosition = defaultdict(list)
         self.transitions_dictionary = defaultdict(list)
         "inicializacion de componentes"
         self.initUI()
@@ -49,7 +51,8 @@ class MyApp(QMainWindow):
         self.painter = QPainter(self.pixmap)
         self.font = QFont()
         self.font.setPixelSize(20)
-        self.pen = QPen(Qt.black, 4, Qt.SolidLine)
+        self.pen = QPen(Qt.lightGray, 4, Qt.SolidLine)
+        self.penAnimation = QPen(Qt.red, 4, Qt.SolidLine)
         self.painter.setPen(self.pen)
         self.painter.setFont(self.font)
         self.painter.drawPixmap(0, 0, self.pixmap)
@@ -218,12 +221,16 @@ class MyApp(QMainWindow):
                     self.painter.drawArc(punto1.x() - tamaño_circulo, punto1.y() - tamaño_circulo, tamaño_circulo, tamaño_circulo, 0 * 16, 270 * 16)
                     self.painter.drawLine(puntoFlecha, QPointF(puntoFlecha.x() - size_arrow, puntoFlecha.y() - size_arrow))
                     self.painter.drawLine(puntoFlecha, QPointF(puntoFlecha.x() + size_arrow, puntoFlecha.y() - size_arrow))
-                    self.painter.drawText(QPointF(punto1.x() - tamaño_circulo, punto1.y() - tamaño_circulo), str(datosTransicion))
+                    puntoTexto = QPointF(punto1.x() - tamaño_circulo, punto1.y() - tamaño_circulo)
+                    self.painter.drawText(puntoTexto, str(datosTransicion))
                     if self.transitions_dictionary[int(primerSeleccionado)]:
                         auxiliar_dict = {int(segundoSeleccionado):datosTransicion}
                         self.transitions_dictionary[int(primerSeleccionado)].update(auxiliar_dict)
+                        auxiliar_dict_positions = {int(segundoSeleccionado):puntoTexto}
+                        self.transitionsValuePosition[int(primerSeleccionado)].update(auxiliar_dict)
                     else:
                         self.transitions_dictionary[int(primerSeleccionado)] = {int(segundoSeleccionado):datosTransicion}
+                        self.transitionsValuePosition[int(primerSeleccionado)] = {int(segundoSeleccionado):puntoTexto}
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
                 else:
@@ -265,8 +272,11 @@ class MyApp(QMainWindow):
                     if self.transitions_dictionary[int(primerSeleccionado)]:
                         auxiliar_dict = {int(segundoSeleccionado):datosTransicion}
                         self.transitions_dictionary[int(primerSeleccionado)].update(auxiliar_dict)
+                        auxiliar_dict_positions = {int(segundoSeleccionado):path.pointAtPercent(0.5)}
+                        self.transitionsValuePosition[int(primerSeleccionado)].update(auxiliar_dict_positions)
                     else:
                         self.transitions_dictionary[int(primerSeleccionado)] = {int(segundoSeleccionado):datosTransicion}
+                        self.transitionsValuePosition[int(primerSeleccionado)] = {int(segundoSeleccionado):path.pointAtPercent(0.5)}
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
             else:
@@ -274,30 +284,41 @@ class MyApp(QMainWindow):
         else:
             self.statusBar().showMessage("STATUS:   Debe seleccionar dos indices!", 5000)
 
+    def pauseAnimation(self, miliseconds):
+        
+
     def verifyWord(self):
         initialPos = 0
         isMoved = False
+        oldkey = 0
         palabraAVerificar = self.textVerifyHolder.displayText()
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
         print(lista_palabra)
         self.statusBar().setStyleSheet("background-color:red")
+        self.painter.setPen(self.penAnimation)
         if palabraAVerificar != "":
             if self.transitions_dictionary:
                 print("antes de:", initialPos)
                 for item in lista_palabra:
+                    self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
+                    print("antes de pausar")
+                    QtCore.QTimer.singleShot(5000, self.paintEvent)
+                    print("despues de pausar")
                     print("seccion ",initialPos ," : ", self.transitions_dictionary[initialPos])
                     try:
                         isMoved = False
                         for key, value in self.transitions_dictionary[initialPos].items():
                             if item == value or item in value.split(","):
+                                puntoADibujar = self.transitionsValuePosition[initialPos][key]
+                                self.painter.drawText(puntoADibujar, str(value))
                                 isMoved = True
-                                initialPos = key
+                                initialPos = key                        
                         if isMoved:
                             print("se mueve")
                         else:
-                            break
                             print("no se mueve")
+                            break
                     except:
                         self.statusBar().showMessage("STATUS:   Verify error!", 10000)    
                 print("despues de:", initialPos)
@@ -310,6 +331,8 @@ class MyApp(QMainWindow):
                 self.statusBar().showMessage("STATUS:   No hay transiciones!", 10000)
         else:
             self.statusBar().showMessage("STATUS:   Debe ingresar una palabra!", 10000)
+        self.painter.setPen(self.pen)
+
 
     def clearScreen(self):
         "borramos las opciones de los combobox iterando al revés"
@@ -320,6 +343,7 @@ class MyApp(QMainWindow):
         self.states_dictionary = {0:QPoint(100, 300)}
         self.accepted_states_dictionary = {}
         self.transitions_dictionary = defaultdict(list)
+        self.transitionsValuePoints = defaultdict(list)
         self.pixmap.fill(Qt.white)
         self.painter.drawText(self.main_dictionary[0], str(len(self.main_dictionary) - 1))
         self.painter.drawEllipse(self.main_dictionary[0], self.size_inner_circle, self.size_inner_circle)
@@ -336,6 +360,7 @@ class MyApp(QMainWindow):
         print("states dict: ", self.states_dictionary)
         print("accepted states dict: ", self.accepted_states_dictionary)
         print("transitions dict: ", self.transitions_dictionary)
+        print("transitions points value dict: ", self.transitionsValuePosition)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
