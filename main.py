@@ -296,6 +296,8 @@ class MyApp(QMainWindow):
 
     def verifyWord(self):
         initialPos = 0
+        isMoved = False
+        oldkey = 0
         palabraAVerificar = self.textVerifyHolder.displayText()
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
