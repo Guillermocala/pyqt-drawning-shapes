@@ -1,5 +1,7 @@
 import sys
 import time
+import os
+from gtts import gTTS
 from collections import defaultdict
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import (
@@ -74,8 +76,13 @@ class MyApp(QMainWindow):
         if not self.statusBar().currentMessage():
             self.statusBar().setStyleSheet("background-color:#F0F0F0")
         if self.timertemp.remainingTime() > 1:
-            print(self.timertemp.remainingTime())
             self.temporal2 = False
+
+    def speach(self,cadena):
+        speech = gTTS(cadena,lang="es",slow=True)
+        speech.save("speach.mp3")
+        os.system("start speach.mp3")
+        time.sleep(2)
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -183,6 +190,7 @@ class MyApp(QMainWindow):
                 self.initialState.addItem(str(len(self.main_dictionary)))
                 self.endingState.addItem(str(len(self.main_dictionary)))
                 self.main_dictionary[len(self.main_dictionary)] = self.actual_pos
+                self.speach("Estado dibujado")
                 self.statusBar().setStyleSheet("background-color:green")
                 self.statusBar().showMessage("STATUS:   State drawed!", 2000)
             case "Draw accept state":
@@ -196,6 +204,7 @@ class MyApp(QMainWindow):
                 self.initialState.addItem(str(len(self.main_dictionary)))
                 self.endingState.addItem(str(len(self.main_dictionary)))
                 self.main_dictionary[len(self.main_dictionary)] = self.actual_pos
+                self.speach("Estado de aceptación dibujado")
                 self.statusBar().setStyleSheet("background-color:green")
                 self.statusBar().showMessage("STATUS:   Accept state drawed!", 2000)
             case _:
@@ -238,6 +247,7 @@ class MyApp(QMainWindow):
                     else:
                         self.transitions_dictionary[int(primerSeleccionado)] = {int(segundoSeleccionado):datosTransicion}
                         self.transitionsValuePosition[int(primerSeleccionado)] = {int(segundoSeleccionado):puntoTexto}
+                    self.speach("Transición dibujada")
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
                 else:
@@ -284,6 +294,7 @@ class MyApp(QMainWindow):
                     else:
                         self.transitions_dictionary[int(primerSeleccionado)] = {int(segundoSeleccionado):datosTransicion}
                         self.transitionsValuePosition[int(primerSeleccionado)] = {int(segundoSeleccionado):path.pointAtPercent(0.5)}
+                    self.speach("Transición dibujada")
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
             else:
@@ -300,6 +311,7 @@ class MyApp(QMainWindow):
         lista_palabra = list(palabraAVerificar)
         if palabraAVerificar != "":
             if self.transitions_dictionary:
+                self.speach("Posicion inicial " + str(initialPos))
                 for item in lista_palabra:
                     self.painter.setPen(self.penAnimation)
                     self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
@@ -333,12 +345,16 @@ class MyApp(QMainWindow):
                                 isMoved = True
                                 initialPos = key
                         if isMoved:
+                            self.speach("Se mueve")
+                            self.speach("Posicion actual " + str(initialPos))
                             print("se mueve")
                         else:
+                            self.speach("No se mueve")
                             print("no se mueve")
                             break
                     except:
                         self.statusBar().showMessage("STATUS:   Verify error!", 10000)
+                self.speach("Posicion final " + str(initialPos))
                 self.painter.setPen(self.penAnimation)
                 self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
                 if initialPos in self.accepted_states_dictionary:
@@ -355,9 +371,11 @@ class MyApp(QMainWindow):
                     self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_outer_circle, self.size_outer_circle)
                 self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
                 if initialPos not in self.accepted_states_dictionary or isMoved == False:
+                    self.speach("Sentencia inválida")
                     self.statusBar().setStyleSheet("background-color:red")
                     self.statusBar().showMessage("STATUS:   Invalid!", 10000)
-                else: 
+                else:
+                    self.speach("Sentencia válida")
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Valid!", 10000)
             else:
