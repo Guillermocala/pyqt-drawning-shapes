@@ -73,8 +73,9 @@ class MyApp(QMainWindow):
         if not self.statusBar().currentMessage():
             self.statusBar().setStyleSheet("background-color:#F0F0F0")
         if self.timertemp.remainingTime() > 1:
+            print(self.timertemp.remainingTime())
             self.temporal2 = False
-        print(self.timertemp.remainingTime())
+        
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -294,8 +295,7 @@ class MyApp(QMainWindow):
         time.sleep(2)
 
     def verifyWord(self):
-        self.timertemp.start(5000)
-        self.temporal2 = True
+        
         initialPos = 0
         isMoved = False
         oldkey = 0
@@ -303,13 +303,15 @@ class MyApp(QMainWindow):
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
         print(lista_palabra)
-        self.statusBar().setStyleSheet("background-color:red")
         self.painter.setPen(self.penAnimation)
         if palabraAVerificar != "":
             if self.transitions_dictionary:
                 print("antes de:", initialPos)
                 for item in lista_palabra:
                     self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
+                    print("dibuja", str(initialPos))
+                    self.temporal2 = True
+                    self.timertemp.start(2000)
                     while self.temporal2:
                         QtCore.QCoreApplication.processEvents()
                     self.pauseAnimation()
@@ -320,6 +322,12 @@ class MyApp(QMainWindow):
                             if item == value or item in value.split(","):
                                 puntoADibujar = self.transitionsValuePosition[initialPos][key]
                                 self.painter.drawText(puntoADibujar, str(value))
+                                print("dibuja", str(value))
+                                self.temporal2 = True
+                                self.timertemp.start(2000)
+                                while self.temporal2:
+                                    QtCore.QCoreApplication.processEvents()
+                                self.pauseAnimation()
                                 isMoved = True
                                 initialPos = key
                         if isMoved:
@@ -330,14 +338,24 @@ class MyApp(QMainWindow):
                     except:
                         self.statusBar().showMessage("STATUS:   Verify error!", 10000)    
                 print("despues de:", initialPos)
+                self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
+                print("dibuja", str(initialPos))
+                self.temporal2 = True
+                self.timertemp.start(2000)
+                while self.temporal2:
+                    QtCore.QCoreApplication.processEvents()
+                self.pauseAnimation()
                 if initialPos not in self.accepted_states_dictionary or isMoved == False:
+                    self.statusBar().setStyleSheet("background-color:red")
                     self.statusBar().showMessage("STATUS:   Invalid!", 10000)
                 else: 
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Valid!", 10000)
             else:
+                self.statusBar().setStyleSheet("background-color:red")
                 self.statusBar().showMessage("STATUS:   No hay transiciones!", 10000)
         else:
+            self.statusBar().setStyleSheet("background-color:red")
             self.statusBar().showMessage("STATUS:   Debe ingresar una palabra!", 10000)
         self.painter.setPen(self.pen)
 
