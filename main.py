@@ -295,17 +295,13 @@ class MyApp(QMainWindow):
         time.sleep(2)
 
     def verifyWord(self):
-        
         initialPos = 0
-        isMoved = False
-        oldkey = 0
         palabraAVerificar = self.textVerifyHolder.displayText()
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
         print(lista_palabra)
         if palabraAVerificar != "":
             if self.transitions_dictionary:
-                print("antes de:", initialPos)
                 for item in lista_palabra:
                     self.painter.setPen(self.penAnimation)
                     self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
