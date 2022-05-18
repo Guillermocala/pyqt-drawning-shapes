@@ -18,15 +18,15 @@ from PySide6.QtWidgets import (
 class MyApp(QMainWindow):
     def __init__(self):
         super(MyApp, self).__init__()
-        self.setGeometry(300, 100, 800, 500)
+        self.setGeometry(0, 0, 1000, 600)
         self.setWindowIcon(QIcon("graph.ico"))
         self.setWindowTitle("Shape drawer")
         "tamaños de los circulos de los estados"
         self.size_inner_circle = 25
         self.size_outer_circle = 33
         "listas de estados"
-        self.main_dictionary = {0:QPoint(100, 200)}
-        self.states_dictionary = {0:QPoint(100, 200)}
+        self.main_dictionary = {0:QPoint(100, 300)}
+        self.states_dictionary = {0:QPoint(100, 300)}
         self.accepted_states_dictionary = {}
         self.transitions_dictionary = defaultdict(list)
         "inicializacion de componentes"
@@ -276,7 +276,7 @@ class MyApp(QMainWindow):
 
     def verifyWord(self):
         initialPos = 0
-        isMoved=False
+        isMoved = False
         palabraAVerificar = self.textVerifyHolder.displayText()
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
@@ -293,14 +293,11 @@ class MyApp(QMainWindow):
                             if item == value or item in value.split(","):
                                 isMoved = True
                                 initialPos = key
-                                
                         if isMoved:
                             print("se mueve")
                         else:
-                            self.statusBar().showMessage("STATUS:   Invalid!", 10000)
                             break
                             print("no se mueve")
-                                        
                     except:
                         self.statusBar().showMessage("STATUS:   Verify error!", 10000)    
                 print("despues de:", initialPos)
@@ -319,8 +316,8 @@ class MyApp(QMainWindow):
         for i in range(len(self.main_dictionary) + 1, 0, -1):
             self.initialState.removeItem(i)
             self.endingState.removeItem(i)
-        self.main_dictionary = {0:QPoint(100, 200)}
-        self.states_dictionary = {0:QPoint(100, 200)}
+        self.main_dictionary = {0:QPoint(100, 300)}
+        self.states_dictionary = {0:QPoint(100, 300)}
         self.accepted_states_dictionary = {}
         self.transitions_dictionary = defaultdict(list)
         self.pixmap.fill(Qt.white)
