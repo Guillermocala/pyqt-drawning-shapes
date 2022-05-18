@@ -276,6 +276,7 @@ class MyApp(QMainWindow):
 
     def verifyWord(self):
         initialPos = 0
+        isMoved=False
         palabraAVerificar = self.textVerifyHolder.displayText()
         print(palabraAVerificar)
         lista_palabra = list(palabraAVerificar)
@@ -285,23 +286,33 @@ class MyApp(QMainWindow):
             if self.transitions_dictionary:
                 print("antes de:", initialPos)
                 for item in lista_palabra:
-                    print("seccion", self.transitions_dictionary[initialPos])
+                    print("seccion ",initialPos ," : ", self.transitions_dictionary[initialPos])
                     try:
+                        isMoved = False
                         for key, value in self.transitions_dictionary[initialPos].items():
-                            if value == item:
+                            if item == value or item in value.split(","):
+                                isMoved = True
                                 initialPos = key
+                                
+                        if isMoved:
+                            print("se mueve")
+                        else:
+                            self.statusBar().showMessage("STATUS:   Invalid!", 10000)
+                            break
+                            print("no se mueve")
+                                        
                     except:
-                        self.statusBar().showMessage("STATUS:   Error!", 5000)    
+                        self.statusBar().showMessage("STATUS:   Verify error!", 10000)    
                 print("despues de:", initialPos)
-                if initialPos not in self.accepted_states_dictionary:
-                    self.statusBar().showMessage("STATUS:   Invalid!", 5000)
+                if initialPos not in self.accepted_states_dictionary or isMoved == False:
+                    self.statusBar().showMessage("STATUS:   Invalid!", 10000)
                 else: 
                     self.statusBar().setStyleSheet("background-color:green")
-                    self.statusBar().showMessage("STATUS:   Valid!", 5000)
+                    self.statusBar().showMessage("STATUS:   Valid!", 10000)
             else:
-                self.statusBar().showMessage("STATUS:   No hay transiciones!", 5000)
+                self.statusBar().showMessage("STATUS:   No hay transiciones!", 10000)
         else:
-            self.statusBar().showMessage("STATUS:   Debe ingresar una palabra!", 5000)
+            self.statusBar().showMessage("STATUS:   Debe ingresar una palabra!", 10000)
 
     def clearScreen(self):
         "borramos las opciones de los combobox iterando al revés"
