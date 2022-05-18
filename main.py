@@ -38,6 +38,7 @@ class MyApp(QMainWindow):
         self.initMenuBar()
         self.initTransitionsModule()
         self.initValidationsModule()
+        self.initTimeSetupModule()
         self.initToolbar()
         self.statusBar().showMessage("Welcome to the AFND visualizer", 5000)
         self.show()
@@ -136,6 +137,28 @@ class MyApp(QMainWindow):
         self.layoutValidationsModule.addLayout(self.layoutVerifyLineEdit)
         self.layoutValidationsModule.addLayout(self.layoutVerifyButton)
 
+    def initTimeSetupModule(self):
+        self.timeSetupModule = QWidget()
+        self.layoutTimeSetupModule = QVBoxLayout(self.timeSetupModule)
+        self.layoutTimeSetupLineEdit = QHBoxLayout()
+        self.layoutTimeSetupButton = QVBoxLayout()
+        self.textTimeSetupHolder = QLineEdit()
+        self.timeSetupButton = QPushButton("Set time")
+        self.timeSetupButton.clicked.connect(self.setTime)
+        self.layoutTimeSetupLineEdit.addWidget(self.textTimeSetupHolder)
+        self.layoutTimeSetupButton.addWidget(self.timeSetupButton)
+        self.layoutTimeSetupModule.addLayout(self.layoutTimeSetupLineEdit)
+        self.layoutTimeSetupModule.addLayout(self.layoutTimeSetupButton)
+
+    def setTime(self):
+        if int(self.textTimeSetupHolder.displayText()) < 1:
+            self.statusBar().setStyleSheet("background-color:red")
+            self.statusBar().showMessage("STATUS:   El tiempo debe ser 1 o mayor!", 2000)
+        else:
+            self.tiempoAnimacion = int(self.textTimeSetupHolder.displayText())
+            self.statusBar().setStyleSheet("background-color:green")
+            self.statusBar().showMessage("STATUS:   Time updated!", 2000)
+
     def initToolbar(self):
         self.subAction21.setChecked(True)
         self.options_toolbar = QToolBar("Options1")
@@ -153,6 +176,8 @@ class MyApp(QMainWindow):
         self.options_toolbar.addWidget(self.transitionsModule)
         self.options_toolbar.addSeparator()
         self.options_toolbar.addWidget(self.validationsModule)
+        self.options_toolbar.addSeparator()
+        self.options_toolbar.addWidget(self.timeSetupModule)
         self.options_toolbar.addSeparator()
         self.options_toolbar.addAction("Clear screen", self.clearScreen)
         self.options_toolbar.addAction("Show data", self.showData)
