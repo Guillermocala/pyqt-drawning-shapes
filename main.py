@@ -275,7 +275,33 @@ class MyApp(QMainWindow):
             self.statusBar().showMessage("STATUS:   Debe seleccionar dos indices!", 5000)
 
     def verifyWord(self):
-        print("hello world")
+        initialPos = 0
+        palabraAVerificar = self.textVerifyHolder.displayText()
+        print(palabraAVerificar)
+        lista_palabra = list(palabraAVerificar)
+        print(lista_palabra)
+        self.statusBar().setStyleSheet("background-color:red")
+        if palabraAVerificar != "":
+            if self.transitions_dictionary:
+                print("antes de:", initialPos)
+                for item in lista_palabra:
+                    print("seccion", self.transitions_dictionary[initialPos])
+                    try:
+                        for key, value in self.transitions_dictionary[initialPos].items():
+                            if value == item:
+                                initialPos = key
+                    except:
+                        self.statusBar().showMessage("STATUS:   Error!", 5000)    
+                print("despues de:", initialPos)
+                if initialPos not in self.accepted_states_dictionary:
+                    self.statusBar().showMessage("STATUS:   Invalid!", 5000)
+                else: 
+                    self.statusBar().setStyleSheet("background-color:green")
+                    self.statusBar().showMessage("STATUS:   Valid!", 5000)
+            else:
+                self.statusBar().showMessage("STATUS:   No hay transiciones!", 5000)
+        else:
+            self.statusBar().showMessage("STATUS:   Debe ingresar una palabra!", 5000)
 
     def clearScreen(self):
         "borramos las opciones de los combobox iterando al revés"
