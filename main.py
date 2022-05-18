@@ -3,7 +3,7 @@ import time
 from collections import defaultdict
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import (
-    Qt, QPoint, QPointF
+    Qt, QPoint, QPointF, QTimer
 )
 from PySide6.QtGui import (
     QPixmap, QPainter, QPaintEvent, QBrush,
@@ -44,6 +44,9 @@ class MyApp(QMainWindow):
         self.setContextMenuPolicy(Qt.PreventContextMenu)
 
     def initUI(self):
+        self.timertemp = QTimer()
+        self.timertemp.setSingleShot(True)
+        self.temporal2 = False
         self.actual_pos = QPoint(0, 0)
         self.input = False
         self.lienzo = QLabel()
@@ -51,7 +54,7 @@ class MyApp(QMainWindow):
         self.painter = QPainter(self.pixmap)
         self.font = QFont()
         self.font.setPixelSize(20)
-        self.pen = QPen(Qt.lightGray, 4, Qt.SolidLine)
+        self.pen = QPen(Qt.black, 4, Qt.SolidLine)
         self.penAnimation = QPen(Qt.red, 4, Qt.SolidLine)
         self.painter.setPen(self.pen)
         self.painter.setFont(self.font)
@@ -69,6 +72,9 @@ class MyApp(QMainWindow):
         self.lienzo.setPixmap(self.pixmap)
         if not self.statusBar().currentMessage():
             self.statusBar().setStyleSheet("background-color:#F0F0F0")
+        if self.timertemp.remainingTime() > 1:
+            self.temporal2 = False
+        print(self.timertemp.remainingTime())
 
     def initMenuBar(self):
         self.menu_bar = self.menuBar()
@@ -284,10 +290,12 @@ class MyApp(QMainWindow):
         else:
             self.statusBar().showMessage("STATUS:   Debe seleccionar dos indices!", 5000)
 
-    def pauseAnimation(self, miliseconds):
-        
+    def pauseAnimation(self):
+        time.sleep(2)
 
     def verifyWord(self):
+        self.timertemp.start(5000)
+        self.temporal2 = True
         initialPos = 0
         isMoved = False
         oldkey = 0
@@ -301,10 +309,10 @@ class MyApp(QMainWindow):
             if self.transitions_dictionary:
                 print("antes de:", initialPos)
                 for item in lista_palabra:
-                    self.painter.drawEllipse(self.main_dictionary[initialPos], self.size_inner_circle, self.size_inner_circle)
-                    print("antes de pausar")
-                    QtCore.QTimer.singleShot(5000, self.paintEvent)
-                    print("despues de pausar")
+                    self.painter.drawText(self.main_dictionary[initialPos], str(initialPos))
+                    while self.temporal2:
+                        QtCore.QCoreApplication.processEvents()
+                    self.pauseAnimation()
                     print("seccion ",initialPos ," : ", self.transitions_dictionary[initialPos])
                     try:
                         isMoved = False
@@ -313,7 +321,7 @@ class MyApp(QMainWindow):
                                 puntoADibujar = self.transitionsValuePosition[initialPos][key]
                                 self.painter.drawText(puntoADibujar, str(value))
                                 isMoved = True
-                                initialPos = key                        
+                                initialPos = key
                         if isMoved:
                             print("se mueve")
                         else:
