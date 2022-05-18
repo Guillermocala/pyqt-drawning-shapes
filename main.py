@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import (
     Qt, QPoint, QPointF
@@ -25,14 +26,14 @@ class MyApp(QMainWindow):
         self.size_outer_circle = 33
         "listas de estados"
         self.main_dictionary = {0:QPoint(100, 200)}
-        self.states_dictionary = {0:QPoint(100, 100)}
+        self.states_dictionary = {0:QPoint(100, 200)}
         self.accepted_states_dictionary = {}
-        self.transitions_dictionary = {}
-        self.pixmap_dict = {}
+        self.transitions_dictionary = defaultdict(list)
         "inicializacion de componentes"
         self.initUI()
         self.initMenuBar()
         self.initTransitionsModule()
+        self.initValidationsModule()
         self.initToolbar()
         self.statusBar().showMessage("Welcome to the AFND visualizer", 5000)
         self.show()
@@ -53,10 +54,6 @@ class MyApp(QMainWindow):
         self.painter.setFont(self.font)
         self.painter.drawPixmap(0, 0, self.pixmap)
         self.pixmap.fill(Qt.white)
-        """self.aux_pixmap = QPixmap(self.size())
-        self.aux_painter = QPainter(self.aux_pixmap)
-        self.aux_painter.setPen(self.pen)
-        self.aux_painter.drawPixmap(0, 0, self.aux_pixmap)"""
         self.painter.drawText(self.main_dictionary[0], str(len(self.main_dictionary) - 1))
         self.painter.drawEllipse(self.main_dictionary[0], self.size_inner_circle, self.size_inner_circle)
         puntoFlechaEstadoInicial = QPointF(self.main_dictionary[0].x() - self.size_inner_circle, self.main_dictionary[0].y())
@@ -109,6 +106,19 @@ class MyApp(QMainWindow):
         self.layoutTransitionsModule.addLayout(self.layoutLineEdit)
         self.layoutTransitionsModule.addLayout(self.layoutButton)
 
+    def initValidationsModule(self):
+        self.validationsModule = QWidget()
+        self.layoutValidationsModule = QVBoxLayout(self.validationsModule)
+        self.layoutVerifyLineEdit = QHBoxLayout()
+        self.layoutVerifyButton = QVBoxLayout()
+        self.textVerifyHolder = QLineEdit()
+        self.verifyButton = QPushButton("Verify")
+        self.verifyButton.clicked.connect(self.verifyWord)
+        self.layoutVerifyLineEdit.addWidget(self.textVerifyHolder)
+        self.layoutVerifyButton.addWidget(self.verifyButton)
+        self.layoutValidationsModule.addLayout(self.layoutVerifyLineEdit)
+        self.layoutValidationsModule.addLayout(self.layoutVerifyButton)
+
     def initToolbar(self):
         self.subAction21.setChecked(True)
         self.options_toolbar = QToolBar("Options1")
@@ -124,6 +134,8 @@ class MyApp(QMainWindow):
         self.options_toolbar.addAction(self.draw_accept_state_action)
         self.options_toolbar.addSeparator()
         self.options_toolbar.addWidget(self.transitionsModule)
+        self.options_toolbar.addSeparator()
+        self.options_toolbar.addWidget(self.validationsModule)
         self.options_toolbar.addSeparator()
         self.options_toolbar.addAction("Clear screen", self.clearScreen)
         self.options_toolbar.addAction("Show data", self.showData)
@@ -150,19 +162,14 @@ class MyApp(QMainWindow):
         self.draw_accept_state_action.setEnabled(False)
         self.statusBar().setStyleSheet("background-color:yellow")
         self.statusBar().showMessage("STATUS:   esperando coordenadas...")
-        #self.aux_pixmap.fill(QtGui.QColor(255, 255, 255, 0))
         match self.sender().text():
             case "Draw state":
                 print("Draw state case")
                 while self.input:
                     QtCore.QCoreApplication.processEvents()
                 self.states_dictionary[len(self.main_dictionary)] = self.actual_pos
-                #self.aux_painter.drawText(self.actual_pos, str(len(self.main_dictionary)))
-                #self.aux_painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
-                #self.pixmap_dict[len(self.pixmap_dict)] = self.aux_pixmap
                 self.painter.drawText(self.actual_pos, str(len(self.main_dictionary)))
                 self.painter.drawEllipse(self.actual_pos, self.size_inner_circle, self.size_inner_circle)
-                #self.painter.drawPixmap(0, 0, self.aux_pixmap)
                 self.initialState.addItem(str(len(self.main_dictionary)))
                 self.endingState.addItem(str(len(self.main_dictionary)))
                 self.main_dictionary[len(self.main_dictionary)] = self.actual_pos
@@ -212,6 +219,11 @@ class MyApp(QMainWindow):
                     self.painter.drawLine(puntoFlecha, QPointF(puntoFlecha.x() - size_arrow, puntoFlecha.y() - size_arrow))
                     self.painter.drawLine(puntoFlecha, QPointF(puntoFlecha.x() + size_arrow, puntoFlecha.y() - size_arrow))
                     self.painter.drawText(QPointF(punto1.x() - tamaño_circulo, punto1.y() - tamaño_circulo), str(datosTransicion))
+                    if self.transitions_dictionary[int(primerSeleccionado)]:
+                        auxiliar_dict = {int(segundoSeleccionado):datosTransicion}
+                        self.transitions_dictionary[int(primerSeleccionado)].update(auxiliar_dict)
+                    else:
+                        self.transitions_dictionary[int(primerSeleccionado)] = {int(segundoSeleccionado):datosTransicion}
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
                 else:
@@ -250,6 +262,11 @@ class MyApp(QMainWindow):
                         self.painter.drawLine(puntoFinal, QPointF(puntoFinal.x() - size_arrow, puntoFinal.y() + size_arrow))
                     self.painter.drawText(path.pointAtPercent(0.5), str(datosTransicion))
                     self.painter.drawPath(path)
+                    if self.transitions_dictionary[int(primerSeleccionado)]:
+                        auxiliar_dict = {int(segundoSeleccionado):datosTransicion}
+                        self.transitions_dictionary[int(primerSeleccionado)].update(auxiliar_dict)
+                    else:
+                        self.transitions_dictionary[int(primerSeleccionado)] = {int(segundoSeleccionado):datosTransicion}
                     self.statusBar().setStyleSheet("background-color:green")
                     self.statusBar().showMessage("STATUS:   Transition Drawed!", 2000)
             else:
@@ -257,15 +274,25 @@ class MyApp(QMainWindow):
         else:
             self.statusBar().showMessage("STATUS:   Debe seleccionar dos indices!", 5000)
 
+    def verifyWord(self):
+        print("hello world")
+
     def clearScreen(self):
         "borramos las opciones de los combobox iterando al revés"
         for i in range(len(self.main_dictionary) + 1, 0, -1):
             self.initialState.removeItem(i)
             self.endingState.removeItem(i)
-        self.main_dictionary = {0:QPoint(100, 100)}
-        self.states_dictionary = {0:QPoint(100, 100)}
+        self.main_dictionary = {0:QPoint(100, 200)}
+        self.states_dictionary = {0:QPoint(100, 200)}
         self.accepted_states_dictionary = {}
+        self.transitions_dictionary = defaultdict(list)
         self.pixmap.fill(Qt.white)
+        self.painter.drawText(self.main_dictionary[0], str(len(self.main_dictionary) - 1))
+        self.painter.drawEllipse(self.main_dictionary[0], self.size_inner_circle, self.size_inner_circle)
+        puntoFlechaEstadoInicial = QPointF(self.main_dictionary[0].x() - self.size_inner_circle, self.main_dictionary[0].y())
+        self.painter.drawLine(puntoFlechaEstadoInicial, QPointF(puntoFlechaEstadoInicial.x() - 45, puntoFlechaEstadoInicial.y()))
+        self.painter.drawLine(puntoFlechaEstadoInicial, QPointF(puntoFlechaEstadoInicial.x() - 15, puntoFlechaEstadoInicial.y() - 15))
+        self.painter.drawLine(puntoFlechaEstadoInicial, QPointF(puntoFlechaEstadoInicial.x() - 15, puntoFlechaEstadoInicial.y() + 15))
         self.statusBar().setStyleSheet("background-color:green")
         self.statusBar().showMessage("STATUS:   Screen cleared!", 2000)
 
@@ -274,7 +301,7 @@ class MyApp(QMainWindow):
         print("main dict: ", self.main_dictionary)
         print("states dict: ", self.states_dictionary)
         print("accepted states dict: ", self.accepted_states_dictionary)
-        print("pixmap dict: ", self.pixmap_dict)
+        print("transitions dict: ", self.transitions_dictionary)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
